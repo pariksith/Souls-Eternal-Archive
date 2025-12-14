@@ -21,7 +21,6 @@ export default defineConfig(({ mode }) => ({
         "/favicon.png",
         "/favicon.png.192x192.png",
         "/favicon.png.512x512.png",
-        "icons/apple-touch-icon.png",
       ],
       manifest: {
         name: "Soul's Eternal Archive",
@@ -42,21 +41,37 @@ export default defineConfig(({ mode }) => ({
             sizes: "512x512",
             type: "image/png",
           },
-          {
-            src: "icons/apple-touch-icon.png",
-            sizes: "180x180",
-            type: "image/png",
-            purpose: "apple-touch-icon",
-          },
         ],
       },
       workbox: {
-        navigateFallback: "index.html",
-        globPatterns: ["**/*.{js,css,html,png,svg,ico}"],
+        cleanupOutdatedCaches: true,
+        navigateFallback: "/index.html",
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) =>
+              request.destination === "document" ||
+              request.destination === "script" ||
+              request.destination === "style",
+            handler: "CacheFirst",
+            options: {
+              cacheName: "app-shell",
+              expiration: { maxEntries: 50 },
+            },
+          },
+          {
+            urlPattern: ({ request }) =>
+              request.destination === "image" ||
+              request.destination === "font",
+            handler: "CacheFirst",
+            options: {
+              cacheName: "assets",
+              expiration: { maxEntries: 100 },
+            },
+          },
+        ],
       },
     }),
-  ].filter(Boolean),
-
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
